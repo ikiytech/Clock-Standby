@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock Standby Screen</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #eaf0f1;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .clock-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .analog-clock {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border: 10px solid #1e272e;
+            border-radius: 50%;
+            background-color: white;
+        }
+
+        .analog-clock .hour,
+        .analog-clock .minute,
+        .analog-clock .second {
+            position: absolute;
+            background-color: black;
+            border-radius: 10px;
+            transform-origin: bottom center;
+        }
+
+        .analog-clock .hour {
+            width: 6px;
+            height: 50px;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .analog-clock .minute {
+            width: 4px;
+            height: 70px;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .analog-clock .second {
+            width: 2px;
+            height: 90px;
+            background-color: red;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .analog-clock .center {
+            width: 10px;
+            height: 10px;
+            background-color: #1e272e;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .analog-clock .numbers {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+
+        .analog-clock .numbers div {
+            position: absolute;
+        }
+
+        .analog-clock .numbers div:nth-child(1) { top: 10px; left: 50%; transform: translateX(-50%); }
+        .analog-clock .numbers div:nth-child(2) { top: 50%; right: 10px; transform: translateY(-50%); }
+        .analog-clock .numbers div:nth-child(3) { bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .analog-clock .numbers div:nth-child(4) { top: 50%; left: 10px; transform: translateY(-50%); }
+
+        .digital-clock {
+            font-size: 2rem;
+            color: green;
+            background-color: black;
+            padding: 10px;
+            border-radius: 5px;
+            margin-right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="clock-container">
+        <div class="digital-clock" id="digital-clock">
+            8:39:22 PM
+        </div>
+        <div class="analog-clock">
+            <div class="hour"></div>
+            <div class="minute"></div>
+            <div class="second"></div>
+            <div class="center"></div>
+            <div class="numbers">
+                <div>12</div>
+                <div>3</div>
+                <div>6</div>
+                <div>9</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function requestWakeLock() {
+            try {
+                const wakeLock = await navigator.wakeLock.request('screen');
+                wakeLock.addEventListener('release', () => {
+                    console.log('Screen Wake Lock released:', wakeLock.released);
+                });
+                console.log('Screen Wake Lock active');
+            } catch (err) {
+                console.error(`${err.name}, ${err.message}`);
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+
+            const second = now.getSeconds();
+            const minute = now.getMinutes();
+            const hour = now.getHours();
+
+            const secondDeg = ((second / 60) * 360);
+            const minuteDeg = ((minute / 60) * 360) + ((second / 60) * 6);
+            const hourDeg = ((hour / 12) * 360) + ((minute / 60) * 30);
+
+            document.querySelector('.second').style.transform = `rotate(${secondDeg}deg)`;
+            document.querySelector('.minute').style.transform = `rotate(${minuteDeg}deg)`;
+            document.querySelector('.hour').style.transform = `rotate(${hourDeg}deg)`;
+
+            const digitalClock = document.getElementById('digital-clock');
+            digitalClock.textContent = now.toLocaleTimeString();
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+        requestWakeLock();
+    </script>
+</body>
+</html>
